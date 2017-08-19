@@ -243,7 +243,7 @@ public class ScreenCaptureImageActivity extends Activity {
                     // create bitmap
                     bitmap = Bitmap.createBitmap(mWidth + rowPadding / pixelStride, mHeight, Bitmap.Config.ARGB_8888);
                     bitmap.copyPixelsFromBuffer(buffer);
-
+                    bitmap = Bitmap.createBitmap(bitmap,0,bitmap.getHeight()/5, 9*bitmap.getWidth()/10, bitmap.getHeight()/4);
                     baseApi.setImage(bitmap);
                     String recognizedText = baseApi.getUTF8Text();
                     toast = Toast.makeText(ScreenCaptureImageActivity.this, recognizedText, Toast.LENGTH_SHORT);
