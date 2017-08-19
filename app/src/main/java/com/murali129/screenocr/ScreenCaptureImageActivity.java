@@ -15,6 +15,7 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -62,6 +63,8 @@ public class ScreenCaptureImageActivity extends Activity {
     private OrientationChangeCallback mOrientationChangeCallback;
     private TessBaseAPI baseApi = null;
     private Toast toast = null;
+    private boolean inProgress = false;
+    private String recognizedText = "";
 
     /****************************************** Activity Lifecycle methods ************************/
     @Override
@@ -75,7 +78,6 @@ public class ScreenCaptureImageActivity extends Activity {
         // DATA_PATH = Path to the storage
         // lang = for which the language data exists, usually "eng"
         baseApi.init(Environment.getExternalStorageDirectory().getPath() +"/tesseract/", "eng");
-        String s = Environment.getExternalStorageState();
         // call for the projection manager
         mProjectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
 
@@ -216,6 +218,7 @@ public class ScreenCaptureImageActivity extends Activity {
         }
     }
 
+
     private void copyFile(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];
         int read;
@@ -225,33 +228,49 @@ public class ScreenCaptureImageActivity extends Activity {
     }
 
     private class ImageAvailableListener implements ImageReader.OnImageAvailableListener {
+
         @Override
         public void onImageAvailable(ImageReader reader) {
+            new AsyncOCRTask().execute(reader);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if(toast!=null)
+                        toast.cancel();
+                    Log.i(TAG,recognizedText);
+                    toast = Toast.makeText(ScreenCaptureImageActivity.this,recognizedText,Toast.LENGTH_LONG);
+                    toast.setText(recognizedText);
+                    toast.show();
+                }
+            });
+
+        }
+    }
+
+
+    private class AsyncOCRTask extends AsyncTask<ImageReader,Void,String> {
+
+        @Override
+        protected String doInBackground(ImageReader... reader) {
             Image image = null;
             FileOutputStream fos = null;
             Bitmap bitmap = null;
-
             try {
-                image = reader.acquireLatestImage();
+                image = reader[0].acquireLatestImage();
                 if (image != null) {
                     Image.Plane[] planes = image.getPlanes();
                     ByteBuffer buffer = planes[0].getBuffer();
                     int pixelStride = planes[0].getPixelStride();
                     int rowStride = planes[0].getRowStride();
                     int rowPadding = rowStride - pixelStride * mWidth;
-
                     // create bitmap
                     bitmap = Bitmap.createBitmap(mWidth + rowPadding / pixelStride, mHeight, Bitmap.Config.ARGB_8888);
                     bitmap.copyPixelsFromBuffer(buffer);
-                    bitmap = Bitmap.createBitmap(bitmap,0,bitmap.getHeight()/5, 9*bitmap.getWidth()/10, bitmap.getHeight()/4);
+                    bitmap = Bitmap.createBitmap(bitmap,0,bitmap.getHeight()/6, 9*bitmap.getWidth()/10,bitmap.getHeight()/4);
                     baseApi.setImage(bitmap);
-                    String recognizedText = baseApi.getUTF8Text();
-                    toast = Toast.makeText(ScreenCaptureImageActivity.this, recognizedText, Toast.LENGTH_SHORT);
-                    toast.show();
-                    IMAGES_PRODUCED++;
-                    Log.e(TAG, "captured image: " + IMAGES_PRODUCED);
+                    recognizedText = baseApi.getUTF8Text();
+                    Log.d("Recognized text",recognizedText);
                 }
-
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -271,9 +290,11 @@ public class ScreenCaptureImageActivity extends Activity {
                     image.close();
                 }
             }
-        }
-    }
 
+            return recognizedText;
+        }
+
+    }
     private class OrientationChangeCallback extends OrientationEventListener {
 
         OrientationChangeCallback(Context context) {
