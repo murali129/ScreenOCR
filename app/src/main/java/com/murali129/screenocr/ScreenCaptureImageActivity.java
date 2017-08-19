@@ -1,8 +1,10 @@
 package com.murali129.screenocr;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
@@ -13,10 +15,12 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.app.ActivityCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -24,6 +28,7 @@ import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
 
@@ -56,6 +61,7 @@ public class ScreenCaptureImageActivity extends Activity {
     private int mRotation;
     private OrientationChangeCallback mOrientationChangeCallback;
     private TessBaseAPI baseApi = null;
+    private Toast toast = null;
 
     /****************************************** Activity Lifecycle methods ************************/
     @Override
@@ -63,6 +69,7 @@ public class ScreenCaptureImageActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        isStoragePermissionGranted();
         copyAssets();
         baseApi = new TessBaseAPI();
         // DATA_PATH = Path to the storage
@@ -101,6 +108,24 @@ public class ScreenCaptureImageActivity extends Activity {
                 Looper.loop();
             }
         }.start();
+    }
+
+    public  boolean isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                Log.v(TAG,"Permission is granted");
+                return true;
+            } else {
+
+                Log.v(TAG,"Permission is revoked");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            Log.v(TAG,"Permission is granted");
+            return true;
+        }
     }
 
     @Override
@@ -219,14 +244,10 @@ public class ScreenCaptureImageActivity extends Activity {
                     bitmap = Bitmap.createBitmap(mWidth + rowPadding / pixelStride, mHeight, Bitmap.Config.ARGB_8888);
                     bitmap.copyPixelsFromBuffer(buffer);
 
-                   // Eg. baseApi.init("/mnt/sdcard/tesseract/tessdata/eng.traineddata", "eng");
                     baseApi.setImage(bitmap);
                     String recognizedText = baseApi.getUTF8Text();
-                    Log.d("result",recognizedText);
-                    // write bitmap to a file
-                    //fos = new FileOutputStream(STORE_DIRECTORY + "/myscreen_" + IMAGES_PRODUCED + ".png");
-                    //bitmap.compress(CompressFormat.JPEG, 100, fos);
-
+                    toast = Toast.makeText(ScreenCaptureImageActivity.this, recognizedText, Toast.LENGTH_SHORT);
+                    toast.show();
                     IMAGES_PRODUCED++;
                     Log.e(TAG, "captured image: " + IMAGES_PRODUCED);
                 }
