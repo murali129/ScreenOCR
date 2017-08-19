@@ -118,7 +118,6 @@ public class ScreenCaptureImageActivity extends Activity {
                 Log.v(TAG,"Permission is granted");
                 return true;
             } else {
-
                 Log.v(TAG,"Permission is revoked");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 return false;
@@ -239,11 +238,10 @@ public class ScreenCaptureImageActivity extends Activity {
                         toast.cancel();
                     Log.i(TAG,recognizedText);
                     toast = Toast.makeText(ScreenCaptureImageActivity.this,recognizedText,Toast.LENGTH_LONG);
-                    toast.setText(recognizedText);
+                    toast.setText(new MathInString().getSolution(recognizedText));
                     toast.show();
                 }
             });
-
         }
     }
 

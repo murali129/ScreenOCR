@@ -29,4 +29,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile project(':tess-two')
     compile project(path: ':tess-two')
+    compile files('libs/jsr-223-1.0.jar')
 }
