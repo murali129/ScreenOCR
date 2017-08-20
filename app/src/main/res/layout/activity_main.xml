@@ -1,19 +1,38 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/rootView"
     android:layout_width="match_parent"
+    android:background="#0099cc"
     android:layout_height="match_parent"
-    android:orientation="horizontal">
+    android:orientation="vertical">
+
 
     <Button
+        android:padding="5dp"
+        android:layout_margin="10dp"
+        android:layout_gravity="center_horizontal"
+        android:background="#00cc99"
         android:id="@+id/startButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/start_recording" />
 
     <Button
+        android:padding="5dp"
+        android:layout_margin="10dp"
+        android:layout_gravity="center_horizontal"
+        android:background="#ff6666"
         android:id="@+id/stopButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/stop_recording" />
+
+    <TextView
+        android:gravity="center_horizontal"
+        android:textStyle="bold"
+        android:layout_margin="10dp"
+        android:layout_gravity="center_horizontal"
+        android:text="press start button and start playing the game, it ends automatically when you play a game"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </LinearLayout>
