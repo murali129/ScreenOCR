@@ -23,3 +23,5 @@ tess-two/build/outputs/aar/tess-two-release.aar
 *.aar
 
 tess-two/build/intermediates/incremental/mergeReleaseJniLibFolders/merger.xml
+
+*.apk
