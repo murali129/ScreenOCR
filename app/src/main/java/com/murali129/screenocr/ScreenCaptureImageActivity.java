@@ -283,7 +283,7 @@ public class ScreenCaptureImageActivity extends Activity {
             out.write(buffer, 0, read);
         }
     }
-    
+
     private class ImageAvailableListener implements ImageReader.OnImageAvailableListener {
 
         @Override
