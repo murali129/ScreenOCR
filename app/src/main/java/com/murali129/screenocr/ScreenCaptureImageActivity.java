@@ -31,6 +31,9 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
 import com.googlecode.tesseract.android.TessBaseAPI;
 
 import java.io.File;
@@ -65,13 +68,58 @@ public class ScreenCaptureImageActivity extends Activity {
     private Toast toast = null;
     private boolean inProgress = false;
     private String recognizedText = "";
+    private InterstitialAd mInterstitialAd;
+    private boolean first = true;
 
     /****************************************** Activity Lifecycle methods ************************/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mInterstitialAd = new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId("ca-app-pub-4958016691160625/5291366421");
 
+        mInterstitialAd.loadAd(new AdRequest.Builder().build());
+        mInterstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                // Code to be executed when an ad finishes loading.
+                Log.i("Ads", "onAdLoaded");
+                if(first){
+                    first = false;
+                    if (mInterstitialAd.isLoaded()) {
+                        mInterstitialAd.show();
+                    } else {
+                        Log.d("TAG", "The interstitial wasn't loaded yet.");
+                    }
+                }
+            }
+
+            @Override
+            public void onAdFailedToLoad(int errorCode) {
+                // Code to be executed when an ad request fails.
+                Log.i("Ads", "onAdFailedToLoad");
+            }
+
+            @Override
+            public void onAdOpened() {
+                // Code to be executed when the ad is displayed.
+                Log.i("Ads", "onAdOpened");
+            }
+
+            @Override
+            public void onAdLeftApplication() {
+                // Code to be executed when the user has left the app.
+                Log.i("Ads", "onAdLeftApplication");
+            }
+
+            @Override
+            public void onAdClosed() {
+                // Code to be executed when when the interstitial ad is closed.
+                Log.i("Ads", "onAdClosed");
+                mInterstitialAd.loadAd(new AdRequest.Builder().build());
+            }
+        });
         isStoragePermissionGranted();
         copyAssets();
         baseApi = new TessBaseAPI();
@@ -110,6 +158,16 @@ public class ScreenCaptureImageActivity extends Activity {
                 Looper.loop();
             }
         }.start();
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        if (mInterstitialAd.isLoaded()) {
+            mInterstitialAd.show();
+        } else {
+            Log.d("TAG", "The interstitial wasn't loaded yet.");
+        }
     }
 
     public  boolean isStoragePermissionGranted() {
@@ -236,7 +294,6 @@ public class ScreenCaptureImageActivity extends Activity {
                 public void run() {
                     if(toast!=null)
                         toast.cancel();
-                    Log.i(TAG,recognizedText);
                     toast = Toast.makeText(ScreenCaptureImageActivity.this,recognizedText,Toast.LENGTH_LONG);
                     toast.setText(new MathInString().getSolution(recognizedText));
                     toast.show();
@@ -267,7 +324,6 @@ public class ScreenCaptureImageActivity extends Activity {
                     bitmap = Bitmap.createBitmap(bitmap,0,bitmap.getHeight()/6, 9*bitmap.getWidth()/10,bitmap.getHeight()/4);
                     baseApi.setImage(bitmap);
                     recognizedText = baseApi.getUTF8Text();
-                    Log.d("Recognized text",recognizedText);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

@@ -3,7 +3,6 @@ package com.murali129.screenocr;
 /**
  * Created by muralikrishna on 19/08/17.
  */
-
 import android.util.Log;
 
 public class MathInString {
@@ -18,17 +17,33 @@ public class MathInString {
 
         if(ocrString.split("=").length != 0){
             return ocrString.split("=")[0];
-        }else{
+        }else if(ocrString.split(":").length != 0){
             return ocrString.split(":")[0];
+        }else if(ocrString.split("z").length != 0){
+            return ocrString.split(":")[0];
+        }else{
+            return "";
         }
     }
 
+    // the below one is bad code, lot of hard coding
     public String getSolution(String ocrString){
         Log.d("Input", ocrString);
         ocrString = getMathStatement(ocrString);
         Log.d("Input", ocrString);
         try{
-            return String.valueOf(eval(ocrString));
+            String string = ocrString;
+            for (int i = 0; i <string.length(); i++) {
+                 if(Integer.valueOf(string.charAt(i))==8212){
+                     if(i!=string.length()-1){
+                         string = string.substring(0,i)+'-'+string.substring(i+1);
+                     }
+                     else{
+                         string = string.substring(0,i) +'-';
+                     }
+                 }
+            }
+            return String.valueOf(eval(string));
         }catch(Exception e){
             return "loading...";
         }
