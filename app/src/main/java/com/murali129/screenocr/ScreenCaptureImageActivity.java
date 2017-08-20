@@ -283,7 +283,7 @@ public class ScreenCaptureImageActivity extends Activity {
             out.write(buffer, 0, read);
         }
     }
-
+    
     private class ImageAvailableListener implements ImageReader.OnImageAvailableListener {
 
         @Override
@@ -295,6 +295,9 @@ public class ScreenCaptureImageActivity extends Activity {
                     if(toast!=null)
                         toast.cancel();
                     toast = Toast.makeText(ScreenCaptureImageActivity.this,recognizedText,Toast.LENGTH_LONG);
+                    if(new MathInString().getSolution(recognizedText).equals("stopping ocr....")){
+                        stopProjection();
+                    }
                     toast.setText(new MathInString().getSolution(recognizedText));
                     toast.show();
                 }

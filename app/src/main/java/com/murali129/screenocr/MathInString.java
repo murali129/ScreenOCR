@@ -15,14 +15,16 @@ public class MathInString {
 
         ocrString = removespacesAndNewLines(ocrString);
 
-        if(ocrString.split("=").length != 0){
+        if(ocrString.split("=").length != 1){
             return ocrString.split("=")[0];
-        }else if(ocrString.split(":").length != 0){
+        }else if(ocrString.split(":").length != 1){
             return ocrString.split(":")[0];
-        }else if(ocrString.split("z").length != 0){
-            return ocrString.split(":")[0];
+        }else if(ocrString.split("z").length != 1){
+            return ocrString.split("z")[0];
+        }else if(ocrString.contains("YOUWIN")||ocrString.contains("YOULOOSE")){
+            return "end";
         }else{
-            return "";
+            return ocrString;
         }
     }
 
@@ -30,23 +32,28 @@ public class MathInString {
     public String getSolution(String ocrString){
         Log.d("Input", ocrString);
         ocrString = getMathStatement(ocrString);
-        Log.d("Input", ocrString);
-        try{
-            String string = ocrString;
-            for (int i = 0; i <string.length(); i++) {
-                 if(Integer.valueOf(string.charAt(i))==8212){
-                     if(i!=string.length()-1){
-                         string = string.substring(0,i)+'-'+string.substring(i+1);
-                     }
-                     else{
-                         string = string.substring(0,i) +'-';
-                     }
-                 }
+        if(ocrString.equals("end")){
+            return "stopping ocr....";
+        }else{
+            Log.d("Input", ocrString);
+            try{
+                String string = ocrString;
+                for (int i = 0; i <string.length(); i++) {
+                    if(Integer.valueOf(string.charAt(i))==8212){
+                        if(i!=string.length()-1){
+                            string = string.substring(0,i)+'-'+string.substring(i+1);
+                        }
+                        else{
+                            string = string.substring(0,i) +'-';
+                        }
+                    }
+                }
+                return String.valueOf(eval(string));
+            }catch(Exception e){
+                return "loading...";
             }
-            return String.valueOf(eval(string));
-        }catch(Exception e){
-            return "loading...";
         }
+
     }
 
     public double eval(final String str) {
@@ -93,6 +100,7 @@ public class MathInString {
                 for (;;) {
                     if      (eat('*')) x *= parseFactor(); // multiplication
                     else if (eat('X')) x *= parseFactor();
+                    else if (eat('x')) x *=parseFactor();
                     else if (eat('/')) x /= parseFactor(); // division
                     else return x;
                 }
